@@ -25,15 +25,17 @@ structurare(Case) :-
     member(casa(galbena, _, _, kools, _), Case),
     Case = [_, _, casa(_, _, lapte, _, _), _, _],
     Case = [casa(_, norvegian, _, _, _),_, _, _, _],
-    langa(casa(_, _, _, chesterfields, _), casa(_, _, _, _, vulpe), Case).
+    langa(casa(_, _, _, chesterfields, _), casa(_, _, _, _, vulpe), Case),
+    langa(casa(_,_,_,kools,_), casa(_,_,_,_,cal), Case),
+    member(casa(_,_,suc_de_portocale,lucky_strike,_), Case),
+    member(casa(_,japonez,_, parliaments,_), Case),
+    langa(casa(_,norvegian,_,_,_), casa(albastru,_,_,_,_), Case).
 
-cauta_casa(X, ListaMare, SubLista):-
-    member(SubLista, ListaMare),
-    member(X, SubLista).
 
-rezultat :-
+
+rezultat(CasaApa, CasaZebra) :-
     structurare(Case),
-    cauta_casa(apa, Case, CasaApa),
-    cauta_casa(tigru, Case, CasaTigru).
-
-    true.
+    CasaApa = casa(_,_,apa,_,_),
+    member(CasaApa, Case),
+    CasaZebra = casa(_,_,_,_,zebra),
+    member(CasaZebra, Case).
