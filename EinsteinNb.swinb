@@ -1,0 +1,132 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+# 1. Cerinta Problemei
+Proiectul vizeaza rezolvarea problemei logice a celor 5 case. Exista 5 case asezate in linie, fiecare avand atribute unice: culoare, nationalitate, bautura, tigara si animal de companie. Folosind 14 indicii de pozitionare si atribute, trebuie sa identificam cine bea apa si cine detine zebra.
+</div>
+
+<div class="nb-cell markdown" name="md2">
+## 2. Explicatia Rezolvarii
+Solutia foloseste programarea logica pentru a gasi o configuratie a listei de case care sa satisfaca toate constrangerile simultan. Motorul de backtracking al Prolog incearca diverse combinatii de valori pentru atributele caselor. Daca o regula este incalcata, sistemul revine si incearca o alta varianta pana cand toate cele 14 indicii sunt validate.
+</div>
+
+<div class="nb-cell markdown" name="md3">
+## 3. Explicatia Predicatelor
+* la_dreapta(Y, X, Lista): Verifica daca elementul Y este imediat la dreapta lui X in lista furnizata.
+* langa(X, Y, Lista): Verifica daca X si Y sunt vecini (X la dreapta lui Y sau invers).
+* structurare(Case): Defineste structura celor 5 case si aplica cele 14 constrangeri logice.
+* rezultat(Apa, Zebra): Predicatul principal care interogheaza structura pentru a gasi posesorul zebrei si bautorul de apa.
+</div>
+
+<div class="nb-cell markdown" name="md4">
+## 4. Instructiuni de rulare
+1. Deschideti acest notebook in interfata SWISH.
+2. Asigurati-va ca celulele de program sunt incarcate in memorie.
+3. Utilizati panoul de interogare (Query) din dreapta jos pentru a rula comanda:
+   ?- rezultat(Apa, Zebra).
+4. Pentru a verifica functionarea interna, puteti rula testele individuale (ex: ?- test_pozitie.).
+</div>
+
+<div class="nb-cell program" data-background="true" data-below="true" name="p1">
+% la_dreapta(Y, X, Lista) - Verifica daca Y este imediat la dreapta lui X 
+% Se cauta perechea [Y, X] in diversele pozitii ale listei de 5 elemente
+la_dreapta(Y, X, [Y, X, _, _, _]).
+la_dreapta(Y, X, [_, Y, X, _, _]).
+la_dreapta(Y, X, [_, _, Y, X, _]).
+la_dreapta(Y, X, [_, _, _, Y, X]).
+
+% langa(X, Y, Lista) - Verifica daca X si Y sunt vecini
+% Vecinatatea este simetrica: X la dreapta lui Y sau Y la dreapta lui X
+langa(X, Y, Lista) :- la_dreapta(X, Y, Lista).
+langa(X, Y, Lista) :- la_dreapta(Y, X, Lista).
+
+% --- Implementarea constrangerilor ---
+
+% structurare(Case) - Aplica cele 14 indicii pe structura de date
+structurare(Case) :-
+    % Initializarea listei de 5 case, fiecare cu 5 atribute
+    Case = [
+        casa(_, _, _, _, _),
+        casa(_, _, _, _, _),
+        casa(_, _, _, _, _),
+        casa(_, _, _, _, _),
+        casa(_, _, _, _, _)
+    ],
+
+    % Aplicarea celor 14 indicii conform cerintei
+    member(casa(rosie, englez, _, _, _), Case),             % Indiciul 1
+    member(casa(_, spaniol, _, _, caine), Case),            % Indiciul 2
+    member(casa(verde, _, cafea, _, _), Case),              % Indiciul 3
+    member(casa(_, ucrainian, ceai, _, _), Case),           % Indiciul 4
+    
+    % Indiciul 5: Casa verde imediat la dreapta celei albe (fildes)
+    % Nota: In codul original verde era la dreapta celei albe
+    la_dreapta(casa(verde, _, _, _, _), casa(alba, _, _, _, _), Case), 
+    
+    member(casa(_, _, _, old_gold, melci), Case),           % Indiciul 6
+    member(casa(galbena, _, _, kools, _), Case),            % Indiciul 7
+    
+    % Indiciul 8: Lapte in casa din mijloc
+    Case = [_, _, casa(_, _, lapte, _, _), _, _],            
+    
+    % Indiciul 9: Norvegianul in prima casa
+    Case = [casa(_, norvegian, _, _, _), _, _, _, _],        
+    
+    langa(casa(_, _, _, chesterfields, _), casa(_, _, _, _, vulpe), Case), % Indiciul 10
+    langa(casa(_, _, _, kools, _), casa(_, _, _, _, cal), Case),           % Indiciul 11
+    member(casa(_, _, suc_de_portocale, lucky_strike, _), Case),           % Indiciul 12
+    member(casa(_, japonez, _, parliaments, _), Case),                     % Indiciul 13
+    
+    % Indiciul 14: Norvegianul locuieste langa casa albastra
+    langa(casa(_, norvegian, _, _, _), casa(albastru, _, _, _, _), Case).
+
+
+% --- Extragerea rezultatelor ---
+
+% rezultat(Apa, Zebra) - Identifica entitatile cerute
+rezultat(Apa, Zebra) :-
+    structurare(Case),
+    % Cautam casa unde bautura este apa
+    Apa = casa(_, _, apa, _, _),
+    member(Apa, Case),
+    % Cautam casa unde animalul este zebra
+    Zebra = casa(_, _, _, _, zebra),
+    member(Zebra, Case).
+
+% Teste pozitie
+test_pozitie_1 :- la_dreapta(b, a, [b, a, c, d, e]). 
+test_pozitie_2 :- \+ la_dreapta(a, b, [b, a, c, d, e]). 
+test_pozitie_3 :- la_dreapta(d, e, [a, b, c, d, e]).
+
+% Teste langa
+test_vecinatate_1 :- langa(a, b, [a, b, c, d, e]).
+test_vecinatate_2 :- langa(b, a, [a, b, c, d, e]).
+test_vecinatate_3 :- \+ langa(a, e, [a, b, c, d, e]).
+
+% Teste structura
+test_structura_1 :- structurare(L), length(L, 5).
+test_structura_2 :- rezultat(_, _).
+test_structura_3 :- rezultat(casa(galbena, norvegian, apa, kools, _), _).
+</div>
+
+<div class="nb-cell program" data-background="true" name="p2">
+
+</div>
+
+<div class="nb-cell query" name="q1">
+rezultat(CasaApa, CasaZebra).
+</div>
+
+<div class="nb-cell query" name="q2">
+test_pozitie_1, test_pozitie_2, test_pozitie_3.
+</div>
+
+<div class="nb-cell query" name="q3">
+test_vecinatate_1, test_vecinatate_2, test_vecinatate_3.
+</div>
+
+<div class="nb-cell query" name="q4">
+test_structura_1, test_structura_2, test_structura_3.
+</div>
+
+</div>
